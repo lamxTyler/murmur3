@@ -46,6 +46,24 @@ pub fn murmur3_x64_128<T :Read>(source: &mut T, seed: u32) -> Result<u128, Strin
     }
 }
 
+pub fn murmur3_x64_128_fast(source: &[u8], seed: u32) -> (u64, u64) {
+    let mut hasher = MurmurHasher::new(seed);
+    let l = len(source);
+    for i in 0..l/16 {
+        hasher.write(&source[i*16..(i+1)*16])
+    }
+
+        match l%16 {
+            0 => {
+                return hasher.build_murmur_hash_1();
+            }
+            i => {
+                hasher.write(&source[l-i..]);
+                return hasher.build_murmur_hash_1();
+            }
+    }
+}
+
 impl Hasher for MurmurHasher{
     fn finish(&self) -> u64 {
         self.build_murmur_hash() as u64
@@ -98,6 +116,14 @@ impl MurmurHasher {
             (self.h1, self.h2)
         };
         finish(state.0, state.1, self.processed)
+    }
+
+    pub fn build_murmur_hash_1(&self) -> (u64, u64){
+        if self.index != 0 {
+            process_odd_bytes(self.h1, self.h2, self.index, &self.buf)
+        }else{
+            (self.h1, self.h2)
+        }
     }
 
 
