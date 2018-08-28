@@ -48,7 +48,7 @@ pub fn murmur3_x64_128<T :Read>(source: &mut T, seed: u32) -> Result<u128, Strin
 
 pub fn murmur3_x64_128_fast(source: &[u8], seed: u32) -> (u64, u64) {
     let mut hasher = MurmurHasher::new(seed);
-    let l = len(source);
+    let l = source.len();
     for i in 0..l/16 {
         hasher.write(&source[i*16..(i+1)*16])
     }
